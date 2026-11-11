@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Pick a Side</title>
+<title>Mouth Off</title>
 <meta name="description" content="A debate party game. Join from your phone, argue the side you're dealt, and let your friends vote.">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito:wght@600;700;800&display=swap">
 <style>html,body{margin:0}[hidden]{display:none!important}
@@ -193,7 +193,7 @@ const TOPICS=[
 ["Living in the city is better","Living in the countryside is better"],
 ["Forgive and forget","Forgive but never forget"]
 ];
-const PREFIX='pickaside-v1-', LS='pick-a-side-net-v1';
+const PREFIX='mouthoff-v1-', LS='mouth-off-net-v1';
 const app=document.getElementById('app');
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
@@ -451,7 +451,7 @@ app.addEventListener('submit',e=>{e.preventDefault();run(e.target.dataset.form)}
 app.addEventListener('toggle',e=>{if(e.target.id==='own-topics')S.topicsOpen=e.target.open},true);
 
 /* ---------- shared view pieces ---------- */
-const logo=`<span class="display logo">Pick <span class="r">a</span> <span class="b">Side</span></span>`;
+const logo=`<span class="display logo"><span class="r">Mouth</span> <span class="b">Off</span></span>`;
 const seg=(act,cur,opts)=>'<div class="seg">'+opts.map(o=>`<button type="button" data-act="${act}" data-v="${o[0]}" aria-pressed="${cur===o[0]}">${o[1]}</button>`).join('')+'</div>';
 function board(names,sc,cls,me){
   const r=names.map((_,i)=>({i,pts:sc[i]||0})).sort((x,y)=>y.pts-x.pts),top=r.length?r[0].pts:0;
@@ -486,7 +486,7 @@ function champ(names,sc,me){
 /* ---------- home ---------- */
 function vHome(){
   return `<div class="stack">
-    <h1 class="display hero">Pick <span class="r">a</span> <span class="b">Side</span></h1>
+    <h1 class="display hero"><span class="r">Mouth</span> <span class="b">Off</span></h1>
     <p class="muted" style="max-width:52ch">Two friends get drawn at random and handed opposite sides of an argument. Each gets the clock to make their case, then everyone else votes from their phone. Most votes at the end wins.</p>
   </div>
   <div class="panel stack"><span class="eyebrow">On your phone</span><h2 class="display mid">Join a game</h2>
