@@ -235,9 +235,9 @@ let H={err:'',code:(location.hash||'').replace(/[^a-z]/gi,'').slice(0,4).toUpper
 let P={code:'',name:'',pid:rid(),status:'connecting',R:null,conn:null,rxAt:0,dialAt:0,myVote:null,quitAsk:false};
 
 function save(){try{
-  if(MODE==='host'){const c=Object.assign({},S);localStorage.setItem(LS,JSON.stringify({mode:'host',S:c}))}
-  else if(MODE==='player')localStorage.setItem(LS,JSON.stringify({mode:'player',P:{code:P.code,name:P.name,pid:P.pid}}));
-  else localStorage.removeItem(LS);
+  if(MODE==='host'){const c=Object.assign({},S);sessionStorage.setItem(LS,JSON.stringify({mode:'host',S:c}))}
+  else if(MODE==='player')sessionStorage.setItem(LS,JSON.stringify({mode:'player',P:{code:P.code,name:P.name,pid:P.pid}}));
+  else sessionStorage.removeItem(LS);
 }catch(e){}}
 const M=()=>S.matches[S.mi];
 const VOTE_SECS=120;let vDeadline=0;
@@ -681,7 +681,7 @@ function render(){
 
 /* ---------- boot ---------- */
 (function(){
-  let saved=null;try{saved=JSON.parse(localStorage.getItem(LS)||'null')}catch(e){}
+  let saved=null;try{saved=JSON.parse(sessionStorage.getItem(LS)||'null')}catch(e){}
   if(saved&&saved.mode==='host'&&saved.S&&saved.S.code&&!H.code){
     MODE='host';S=Object.assign(fresh(),saved.S);S.quitAsk=false;S.err='';S.net='connecting';S.restored=true;
     if(S.phase==='running')S.phase='paused';
