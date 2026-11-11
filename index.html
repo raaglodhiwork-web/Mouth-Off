@@ -240,6 +240,8 @@ function save(){try{
   else sessionStorage.removeItem(LS);
 }catch(e){}}
 const M=()=>S.matches[S.mi];
+const TEST_MODE=true; // TEMP: test players a-e. Remove before shipping.
+const isBot=pid=>String(pid).indexOf('bot-')===0;
 const VOTE_SECS=120;let vDeadline=0;
 
 /* ---------- game logic (host) ---------- */
@@ -405,7 +407,14 @@ function onTick(){
   if(Math.ceil(S.remaining)!==Math.ceil(prev)&&S.remaining>0&&S.remaining<=10)tone(880,.09);
   if(S.remaining<=0){stopTick();S.phase='done';tone(196,.9,'sawtooth',.12);render()}else paintClock(S.remaining,S.secs,true);
 }
-function startVote(left){S.voteLeft=left;vDeadline=Date.now()+left*1000;clearInterval(tick);tick=setInterval(onVoteTick,250)}
+function startVote(left){S.voteLeft=left;vDeadline=Date.now()+left*1000;clearInterval(tick);tick=setInterval(onVoteTick,250);botVotes()}
+function botVotes(){
+  if(!TEST_MODE)return;const m=M(),mi=S.mi;
+  voters(m).forEach(i=>{if(!isBot(S.pids[i]))return;setTimeout(()=>{
+    if(MODE!=='host'||S.screen!=='vote'||S.mi!==mi||M()!==m||(i in m.votes))return;
+    m.votes[i]=Math.random()<.5?'a':'b';checkVotes();render();
+  },2000+Math.random()*8000)});
+}
 function paintVote(left){const d=document.getElementById('vdigits');if(d){d.textContent=fmt(left);d.classList.toggle('low',left<=10)}}
 function onVoteTick(){
   if(MODE!=='host'||S.screen!=='vote'){stopTick();return}
@@ -444,6 +453,7 @@ const A={
     if(S.players.some(p=>p.toLowerCase()===name.toLowerCase())){S.err='Someone already took the name '+name+'.';return render()}
     S.err='';S.hostPid='host-'+rid();S.players.push(name);S.pids.push(S.hostPid);clr('host-name');render();
   },
+  addBots(){if(!TEST_MODE||S.screen!=='lobby')return;['a','b','c','d','e'].forEach(n=>{if(S.players.length<20&&!S.players.some(p=>p.toLowerCase()===n)){S.players.push(n);S.pids.push('bot-'+n)}});render()},
   removePlayer(b){
     const i=+b.dataset.i,pid=S.pids[i];if(S.screen!=='lobby'||pid===undefined)return;
     if(pid===S.hostPid)S.hostPid=null;
@@ -482,7 +492,7 @@ const A={
   backToLobby(){stopTick();S.screen='lobby';S.matches=[];S.mi=0;S.quitAsk=false;render()},
   endGame(){tellAll({t:'ended'});const p=peer;setTimeout(()=>{try{p&&p.destroy()}catch(e){}},400);peer=null;stopTick();MODE='home';H.err='';for(const k in conns)delete conns[k];render()}
 };
-const HOST_ONLY=['addSelf','removePlayer','setK','setSecs','addTopic','removeTopic','start','swapTopic','toClock','startClock','pauseClock','finishEarly','nextSpeaker','hostVote','closeVoting','nextMatch','backToLobby','endGame'];
+const HOST_ONLY=['addBots','addSelf','removePlayer','setK','setSecs','addTopic','removeTopic','start','swapTopic','toClock','startClock','pauseClock','finishEarly','nextSpeaker','hostVote','closeVoting','nextMatch','backToLobby','endGame'];
 function run(name,b){if(!A[name])return;if(HOST_ONLY.includes(name)&&MODE!=='host')return;A[name](b)}
 app.addEventListener('click',e=>{const b=e.target.closest('[data-act]');if(MODE==='host')wake(true);if(b&&!b.disabled)run(b.dataset.act,b)});
 app.addEventListener('submit',e=>{e.preventDefault();run(e.target.dataset.form)});
@@ -564,8 +574,9 @@ function hLobby(){
   </div>
   <div class="panel stack">
     <span class="eyebrow">In the room · ${n}</span>
-    ${n?'<ul class="chips">'+S.players.map((p,i)=>{const on=S.pids[i]===S.hostPid||(conns[S.pids[i]]&&conns[S.pids[i]].open);return `<li class="chip${on?'':' off'}">${esc(p)}<button type="button" data-act="removePlayer" data-i="${i}" aria-label="Remove ${esc(p)}">×</button></li>`}).join('')+'</ul>':'<p class="muted">Nobody yet. You need at least 3 players: two to argue and one to vote.</p>'}
+    ${n?'<ul class="chips">'+S.players.map((p,i)=>{const on=S.pids[i]===S.hostPid||isBot(S.pids[i])||(conns[S.pids[i]]&&conns[S.pids[i]].open);return `<li class="chip${on?'':' off'}">${esc(p)}<button type="button" data-act="removePlayer" data-i="${i}" aria-label="Remove ${esc(p)}">×</button></li>`}).join('')+'</ul>':'<p class="muted">Nobody yet. You need at least 3 players: two to argue and one to vote.</p>'}
     ${S.hostPid?'':`<form class="row" data-form="addSelf"><input type="text" id="host-name" maxlength="24" placeholder="Playing from this screen? Your name" autocomplete="off" aria-label="Host player name"><button class="btn small ghost" type="submit">Add me</button></form>`}
+    ${TEST_MODE?`<div class="row"><button class="btn small ghost" data-act="addBots">Add test players a to e</button><span class="muted">Testing only. They vote at random.</span></div>`:''}
     ${S.err?`<p class="err">${esc(S.err)}</p>`:''}
     <div class="setting"><strong>Debates per person</strong>${seg('setK',S.k,[[1,'1'],[2,'2'],[3,'3']])}</div>
     <div class="setting"><strong>Time per speaker</strong>${seg('setSecs',S.secs,[[60,'1 min'],[120,'2 min'],[180,'3 min']])}</div>
