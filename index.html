@@ -237,7 +237,7 @@ function save(){try{
   else sessionStorage.removeItem(LS);
 }catch(e){}}
 const M=()=>S.matches[S.mi];
-const TEST_MODE=true; // TEMP: test players a-e. Remove before shipping.
+const TEST_MODE=false; // set true to show the "Add test players" button for solo testing
 const isBot=pid=>String(pid).indexOf('bot-')===0;
 const VOTE_SECS=120;let vDeadline=0;
 
